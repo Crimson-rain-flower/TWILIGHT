@@ -1,5 +1,8 @@
 # TWILIGHT + Twinity + LangChain agents
 
+**A runtime security gateway for AI agents.** 
+Agents have no direct access to tools: every action goes through TWILIGHT, which checks it (signature, policy, trust score, tamper-evident log) before it runs. Prototype: a fake "urgent" ₹9,000 refund is **allowed with the guard OFF and blocked with it ON**. Finalist (Top 15), Repoforge Hackathon.
+
 ## What this is
 - **Twilight gateway** (M1–M3): attestation, policy, trust, audit
 - **Frontend**: Twinity Bank UI (`frontend/`)
@@ -7,7 +10,7 @@
   - TalkerLC, PoisonerLC (red team, words only)
   - SupportBotLC, CoordinatorLC (tools go through Twilight)
 
-Without `OPENAI_API_KEY`, agents use LangChain tools + offline planner.
+Without `GROQ_API_KEY` or `OPENAI_API_KEY`, agents use LangChain tools + offline planner.
 With a key + `pip install langchain langchain-openai`, they use a real tool-calling LLM.
 
 ## Quick terminal demo (LangChain path)
@@ -19,7 +22,18 @@ python -m venv venv
 pip install fastapi uvicorn pydantic pydantic-settings pyyaml pynacl httpx
 # optional:
 pip install langchain langchain-core langchain-openai
+```
 
+### First-time setup (once)
+```bash
+cp .env.example .env              # Windows: copy .env.example .env
+python scripts/setup_keys.py      # generates signing keys (git-ignored)
+python scripts/sign_manifests.py  # signs each agent's trusted config
+python scripts/reset_db.py
+```
+
+### Run the attack
+```bash
 python scripts/run_langchain_attack.py --mode on
 python scripts/run_langchain_attack.py --mode off
 ```
@@ -40,6 +54,8 @@ python scripts/reset_db.py
 python -m uvicorn gateway.main:app --port 8000 --reload
 cd frontend && python -m http.server 5500
 ```
+
+(The gateway also serves the dashboard itself at http://127.0.0.1:8000/ui/, so the last line is optional.)
 
 ## Layout
 
